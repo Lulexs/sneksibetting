@@ -16,7 +16,6 @@ import org.jooq.TableField;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
 import org.jooq.impl.Internal;
-import org.jooq.impl.QOM.ForeignKeyRule;
 
 
 /**
@@ -39,9 +38,9 @@ public class Keys {
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
-    public static final ForeignKey<BetsRecord, GamesRecord> BETS__BETS_GAME_ID_FKEY = Internal.createForeignKey(Bets.BETS, DSL.name("bets_game_id_fkey"), new TableField[] { Bets.BETS.GAME_ID }, Keys.GAMES_PKEY, new TableField[] { Games.GAMES.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
-    public static final ForeignKey<BetsRecord, UsersRecord> BETS__BETS_USER_ID_FKEY = Internal.createForeignKey(Bets.BETS, DSL.name("bets_user_id_fkey"), new TableField[] { Bets.BETS.USER_ID }, Keys.USERS_PKEY, new TableField[] { Users.USERS.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
-    public static final ForeignKey<GamesRecord, UsersRecord> GAMES__GAME_USER_FK1 = Internal.createForeignKey(Games.GAMES, DSL.name("game_user_fk1"), new TableField[] { Games.GAMES.PLAYER1_ID }, Keys.USERS_PKEY, new TableField[] { Users.USERS.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
-    public static final ForeignKey<GamesRecord, UsersRecord> GAMES__GAME_USER_FK2 = Internal.createForeignKey(Games.GAMES, DSL.name("game_user_fk2"), new TableField[] { Games.GAMES.PLAYER2_ID }, Keys.USERS_PKEY, new TableField[] { Users.USERS.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
-    public static final ForeignKey<GamesRecord, UsersRecord> GAMES__GAME_USER_FK3 = Internal.createForeignKey(Games.GAMES, DSL.name("game_user_fk3"), new TableField[] { Games.GAMES.WINNER_ID }, Keys.USERS_PKEY, new TableField[] { Users.USERS.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
+    public static final ForeignKey<BetsRecord, GamesRecord> BETS__BETS_GAME_ID_FKEY = Internal.createForeignKey(Bets.BETS, DSL.name("bets_game_id_fkey"), new TableField[] { Bets.BETS.GAME_ID }, Keys.GAMES_PKEY, new TableField[] { Games.GAMES.ID }, true);
+    public static final ForeignKey<BetsRecord, UsersRecord> BETS__BETS_USER_ID_FKEY = Internal.createForeignKey(Bets.BETS, DSL.name("bets_user_id_fkey"), new TableField[] { Bets.BETS.USER_ID }, Keys.USERS_PKEY, new TableField[] { Users.USERS.ID }, true);
+    public static final ForeignKey<GamesRecord, UsersRecord> GAMES__GAME_USER_FK1 = Internal.createForeignKey(Games.GAMES, DSL.name("game_user_fk1"), new TableField[] { Games.GAMES.PLAYER1_ID }, Keys.USERS_PKEY, new TableField[] { Users.USERS.ID }, true);
+    public static final ForeignKey<GamesRecord, UsersRecord> GAMES__GAME_USER_FK2 = Internal.createForeignKey(Games.GAMES, DSL.name("game_user_fk2"), new TableField[] { Games.GAMES.PLAYER2_ID }, Keys.USERS_PKEY, new TableField[] { Users.USERS.ID }, true);
+    public static final ForeignKey<GamesRecord, UsersRecord> GAMES__GAME_USER_FK3 = Internal.createForeignKey(Games.GAMES, DSL.name("game_user_fk3"), new TableField[] { Games.GAMES.WINNER_ID }, Keys.USERS_PKEY, new TableField[] { Users.USERS.ID }, true);
 }

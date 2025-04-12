@@ -167,6 +167,6 @@ public class BetsRecord extends UpdatableRecordImpl<BetsRecord> {
         setStake(stake);
         setWinnings(winnings);
         setStatus(status);
-        resetTouchedOnNotNull();
+        resetChangedOnNotNull();
     }
 }

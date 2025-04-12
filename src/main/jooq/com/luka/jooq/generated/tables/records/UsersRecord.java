@@ -197,6 +197,6 @@ public class UsersRecord extends UpdatableRecordImpl<UsersRecord> {
         setBetsLost(betsLost);
         setElo(elo);
         setCoins(coins);
-        resetTouchedOnNotNull();
+        resetChangedOnNotNull();
     }
 }

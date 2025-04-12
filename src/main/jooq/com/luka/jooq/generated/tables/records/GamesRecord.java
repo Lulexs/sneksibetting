@@ -137,6 +137,6 @@ public class GamesRecord extends UpdatableRecordImpl<GamesRecord> {
         setPlayer1Elo(player1Elo);
         setPlayer2Elo(player2Elo);
         setWinnerId(winnerId);
-        resetTouchedOnNotNull();
+        resetChangedOnNotNull();
     }
 }
