@@ -2,6 +2,7 @@ import { createBrowserRouter, RouteObject } from "react-router";
 import HomePage from "./pages/HomePage/HomePage";
 import LoginPage from "./pages/Auth/LoginPage";
 import RegisterPage from "./pages/Auth/RegisterPage";
+import MainMenu from "./pages/MainMenu/MainMenu";
 
 export const routes: RouteObject[] = [
   {
@@ -15,6 +16,10 @@ export const routes: RouteObject[] = [
   {
     path: "/register",
     element: <RegisterPage />,
+  },
+  {
+    path: "/mainmenu",
+    element: <MainMenu />,
   },
 ];
 
