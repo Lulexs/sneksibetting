@@ -1,0 +1,39 @@
+CREATE TABLE users (
+	id          UUID PRIMARY KEY,
+	username    VARCHAR(255) NOT NULL UNIQUE,
+	password    VARCHAR(255) NOT NULL,
+	wins        INT DEFAULT 0,
+	draws       INT DEFAULT 0,
+	losses      INT DEFAULT 0,
+	bets_won    INT DEFAULT 0,
+	bets_lost   INT DEFAULT 0,
+	elo         DECIMAL(10, 6) DEFAULT 1000,
+	coins       DECIMAL(10, 6) DEFAULT 100
+);
+
+select * from users;
+
+CREATE TABLE games (
+	id           UUID PRIMARY KEY,
+	player1_id   UUID,
+	player2_id   UUID,
+	player1_elo  DECIMAL(10, 6),
+	player2_elo  DECIMAL(10, 6),
+	winner_id    UUID,
+	CONSTRAINT game_user_fk1 FOREIGN KEY (player1_id) REFERENCES users(id),
+	CONSTRAINT game_user_fk2 FOREIGN KEY (player2_id) REFERENCES users(id),
+	CONSTRAINT game_user_fk3 FOREIGN KEY (winner_id) REFERENCES users(id)
+);
+
+CREATE TABLE bets (
+	id        UUID PRIMARY KEY,
+	user_id   UUID,
+	game_id   UUID,
+	bet       CHAR(1) CHECK (bet IN ('1', 'X', '2')),
+	odds      DECIMAL(10, 6),
+	stake     DECIMAL(10, 6),
+	winnings  DECIMAL(10, 6),
+	status    VARCHAR(4) CHECK (status IN ('live', 'won', 'lost')),
+	FOREIGN KEY (user_id) REFERENCES users(id),
+	FOREIGN KEY (game_id) REFERENCES games(id)
+);
