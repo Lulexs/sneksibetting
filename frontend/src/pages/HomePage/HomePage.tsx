@@ -2,7 +2,7 @@ import { Button, Flex, Group } from "@mantine/core";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import useWebSocket from "react-use-websocket";
-import { TypedMessage } from "../../models/Message";
+import { QueuedMessage, TypedMessage } from "../../models/Message";
 
 function getBytes(type: number, message: any) {
   const json = JSON.stringify(message);
@@ -16,8 +16,23 @@ function getBytes(type: number, message: any) {
   return buffer;
 }
 
-function getMessage(arr: ArrayBuffer): TypedMessage {
+async function getMessage(buf: Blob) : Promise<TypedMessage> {
+  if (buf == null || buf == undefined) {
+    return {id: 0, message: {id: 0}}
+  }
+  console.log(typeof buf)
+  console.log(buf)
+  const dv = new DataView(await buf.arrayBuffer());
 
+  const type = dv.getInt32(0);
+
+  switch (type) {
+    case 2:
+      return {id: type, message: new QueuedMessage(type)} 
+  
+    default:
+      return {id: 0, message: {id: 0}};
+  }
 }
 
 export default function HomePage() {
@@ -27,20 +42,26 @@ export default function HomePage() {
 
   const {sendMessage, lastMessage} = useWebSocket(socketUrl);
 
+
   useEffect(() => {
-    
+    const processMessage = async () => {
+      if (lastMessage && lastMessage.data instanceof Blob) {
+        const parsedMessage = await getMessage(lastMessage.data);
+      }
+    };
+  
+    processMessage();
   }, [lastMessage]);
 
 
   return (
     <Flex direction="column" m="lg">
-      {/* <Group>
+      <Group>
         <Button onClick={() => navigate("/login")}>Login</Button>
         <Button onClick={() => navigate("/register")}>Register</Button>
       </Group>
-      <h1>WELCOME TO SNEKSI BETTING</h1> */}
+      <h1>WELCOME TO SNEKSI BETTING</h1>
       <Button onClick={() => {sendMessage(getBytes(1, {userId: "5516e359-6c9c-4ebb-a409-52373d536d50"}))}}>Clickme</Button>
-      <h5>{lastMessage?.data}</h5>
     </Flex>
   );
 }
