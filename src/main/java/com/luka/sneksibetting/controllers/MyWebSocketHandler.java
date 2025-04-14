@@ -2,6 +2,7 @@ package com.luka.sneksibetting.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.luka.sneksibetting.models.gameMessages.HelloMessage;
+import com.luka.sneksibetting.models.gameMessages.QueuedMessage;
 import com.luka.sneksibetting.services.GameService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
@@ -11,11 +12,13 @@ import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class MyWebSocketHandler extends BinaryWebSocketHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private GameService gameService;
+    private static final ConcurrentHashMap<String, String> seshToUid = new ConcurrentHashMap<>();
+    private final GameService gameService;
 
     public MyWebSocketHandler(GameService gameService) {
         this.gameService = gameService;
@@ -39,7 +42,9 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
         switch (type) {
             case 1:
                 HelloMessage hello = objectMapper.readValue(jsonString, HelloMessage.class);
+                seshToUid.put(session.getId(), hello.getUserId());
                 gameService.AddUserToQueue(hello);
+                session.sendMessage(new BinaryMessage(new QueuedMessage().GetBytes()));
                 break;
             default:
                 break;
@@ -48,6 +53,7 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        seshToUid.remove(session.getId());
         System.out.println("Disconnected: " + session.getId() + " due to " + status.getReason());
     }
 }

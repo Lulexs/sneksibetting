@@ -1,6 +1,8 @@
 import { Button, Flex, Group } from "@mantine/core";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import useWebSocket from "react-use-websocket";
+import { TypedMessage } from "../../models/Message";
 
 function getBytes(type: number, message: any) {
   const json = JSON.stringify(message);
@@ -14,12 +16,20 @@ function getBytes(type: number, message: any) {
   return buffer;
 }
 
+function getMessage(arr: ArrayBuffer): TypedMessage {
+
+}
+
 export default function HomePage() {
   const navigate = useNavigate();
 
   const socketUrl = "ws://localhost:8080/ws";
 
   const {sendMessage, lastMessage} = useWebSocket(socketUrl);
+
+  useEffect(() => {
+    
+  }, [lastMessage]);
 
 
   return (
