@@ -2,34 +2,10 @@ import { useEffect, useState } from "react";
 import { useStore } from "../../stores/store";
 import { useNavigate } from "react-router";
 import { Flex } from "@mantine/core";
-import Board, { BoardsProps } from "./Boards";
-import { TypedMessage } from "../../models/Message";
+import { BoardsProps } from "./Boards";
+import { GameStartNoBets, TypedMessage } from "../../models/Message";
 import useWebSocket from "react-use-websocket";
-
-const booleanMatrix: number[][] = Array.from({ length: 10 }, () =>
-  Array(10).fill(0)
-);
-
-booleanMatrix[0][0] = 1;
-booleanMatrix[0][1] = 1;
-booleanMatrix[0][2] = 1;
-
-booleanMatrix[1][0] = 1;
-
-booleanMatrix[5][5] = 2;
-
-const testObj: BoardsProps = {
-  my_board: booleanMatrix,
-  opp_board: booleanMatrix,
-  my_username: "Lule",
-  opp_username: "TestUser",
-  my_elo: 1000,
-  opp_elo: 988,
-  elo_gain_if_draw: -1,
-  elo_gain_if_lose: -5,
-  elo_gain_if_win: 3,
-  num_watching: 4,
-};
+import Boards from "./Boards";
 
 function getBytes(type: number, message: any) {
   const json = JSON.stringify(message);
@@ -47,7 +23,6 @@ async function getMessage(buf: Blob): Promise<TypedMessage> {
   if (buf == null || buf == undefined) {
     return { id: 0, message: { id: 0 } };
   }
-  console.log(typeof buf);
   console.log(buf);
   const dv = new DataView(await buf.arrayBuffer());
 
@@ -56,6 +31,19 @@ async function getMessage(buf: Blob): Promise<TypedMessage> {
   switch (type) {
     case 2:
       return { id: type, message: {} };
+
+    case 3: {
+      const buffer = await buf.arrayBuffer();
+      const jsonBytes = new Uint8Array(buffer, 4 + 2);
+      const jsonString = new TextDecoder().decode(jsonBytes);
+      try {
+        const json = JSON.parse(jsonString);
+        return { id: type, message: json };
+      } catch (e) {
+        console.error("Failed to parse JSON:", e);
+        return { id: type, message: {} };
+      }
+    }
 
     default:
       return { id: 0, message: {} };
@@ -70,6 +58,8 @@ export default function PlayGame() {
 
   const { sendMessage, lastMessage } = useWebSocket(socketUrl);
   const [state, setState] = useState(0);
+
+  const [gameState, setGameState] = useState<BoardsProps | null>(null);
 
   useEffect(() => {
     if (userStore.user == null) {
@@ -87,8 +77,30 @@ export default function PlayGame() {
     const processMessage = async () => {
       if (lastMessage && lastMessage.data instanceof Blob) {
         const parsedMessage = await getMessage(lastMessage.data);
-        if (parsedMessage.id == 2) {
+
+        if (parsedMessage.id === 2) {
           setState(2);
+        } else if (parsedMessage.id === 3) {
+          const msg = parsedMessage.message as GameStartNoBets;
+          const isPlayer1 = userStore.user?.username === msg.player1Username;
+
+          const boardProps: BoardsProps = {
+            my_board: isPlayer1 ? msg.player1Board : msg.player2Board,
+            opp_board: isPlayer1 ? msg.player2Board : msg.player1Board,
+            my_username: isPlayer1 ? msg.player1Username : msg.player2Username,
+            opp_username: isPlayer1 ? msg.player2Username : msg.player1Username,
+            my_elo: isPlayer1 ? msg.player1Elo : msg.player2Elo,
+            opp_elo: isPlayer1 ? msg.player2Elo : msg.player1Elo,
+            elo_gain_if_win: msg.eloIfP1Wins,
+            elo_gain_if_lose: msg.eloIfP1Lose,
+            elo_gain_if_draw: msg.eloIfDraw,
+            num_watching: msg.numWatching,
+            my_score: isPlayer1 ? msg.player1Score : msg.player2Score,
+            opp_score: isPlayer1 ? msg.player2Score : msg.player1Score,
+          };
+
+          setGameState(boardProps);
+          setState(3);
         }
       }
     };
@@ -106,7 +118,7 @@ export default function PlayGame() {
     <Flex m="lg" h="85vh" align="center" justify="center">
       {state == 0 && <h1>Waiting for server</h1>}
       {state == 2 && <h1>Waiting for opponent</h1>}
-      {state == 4 && <Board {...testObj} />}
+      {state == 3 && <Boards {...gameState!} />}
     </Flex>
   );
 }

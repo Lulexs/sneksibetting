@@ -6,11 +6,15 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GameStartNoBetMessage extends Message {
     private final String gameId;
     private final Integer[][] player1Board;
     private final Integer[][] player2Board;
+    private final Integer player1Score;
+    private final Integer player2Score;
     private final Integer player1HeadPosI;
     private final Integer player1HeadPosJ;
     private final Integer player2HeadPosI;
@@ -27,6 +31,8 @@ public class GameStartNoBetMessage extends Message {
     public GameStartNoBetMessage(String player1Username,
                                  String player2Username, String gameId, BigDecimal player1Elo, BigDecimal player2Elo) {
         super(3);
+        this.player1Score = 0;
+        this.player2Score = 0;
         this.player1HeadPosI = 5;
         this.player1HeadPosJ = 5;
         this.player2HeadPosI = 5;
@@ -41,7 +47,15 @@ public class GameStartNoBetMessage extends Message {
         for (int i = 0; i < 10; i++) {
             player1Board[i] = new Integer[10];
             player2Board[i] = new Integer[10];
+            for (int j = 0; j < 10; j++) {
+                player1Board[i][j] = 0;
+                player2Board[i][j] = 0;
+            }
         }
+        player1Board[5][5] = 1;
+        player2Board[5][5] = 1;
+        player1Board[3][3] = 2;
+        player2Board[3][3] = 2;
         this.eloIfP1Wins = new BigDecimal(10);
         this.eloIfP1Lose = new BigDecimal(10);
         this.eloIfDraw = new BigDecimal(0);
@@ -55,25 +69,26 @@ public class GameStartNoBetMessage extends Message {
 
         dataOutputStream.writeInt(id);
 
-        var msgObj = new Object() {
-            final String gameId = GameStartNoBetMessage.this.gameId;
-            final Integer[][] player1Board = GameStartNoBetMessage.this.player1Board;
-            final Integer[][] player2Board = GameStartNoBetMessage.this.player2Board;
-            final Integer player1HeadPosI = GameStartNoBetMessage.this.player1HeadPosI;
-            final Integer player1HeadPosJ = GameStartNoBetMessage.this.player1HeadPosJ;
-            final Integer player2HeadPosI = GameStartNoBetMessage.this.player2HeadPosI;
-            final Integer player2HeadPosJ = GameStartNoBetMessage.this.player2HeadPosJ;
-            final String player1Username = GameStartNoBetMessage.this.player1Username;
-            final String player2Username = GameStartNoBetMessage.this.player2Username;
-            final BigDecimal player1Elo = GameStartNoBetMessage.this.player1Elo;
-            final BigDecimal player2Elo = GameStartNoBetMessage.this.player2Elo;
-            final BigDecimal eloIfP1Wins = GameStartNoBetMessage.this.eloIfP1Wins;
-            final BigDecimal eloIfP1Lose = GameStartNoBetMessage.this.eloIfP1Lose;
-            final BigDecimal eloIfDraw = GameStartNoBetMessage.this.eloIfDraw;
-            final Integer numWatching = GameStartNoBetMessage.this.numWatching;
-        };
+        Map<String, Object> msgObj = new HashMap<>();
+        msgObj.put("gameId", this.gameId);
+        msgObj.put("player1Board", this.player1Board);
+        msgObj.put("player2Board", this.player2Board);
+        msgObj.put("player1HeadPosI", this.player1HeadPosI);
+        msgObj.put("player1HeadPosJ", this.player1HeadPosJ);
+        msgObj.put("player2HeadPosI", this.player2HeadPosI);
+        msgObj.put("player2HeadPosJ", this.player2HeadPosJ);
+        msgObj.put("player1Score", this.player1Score);
+        msgObj.put("player2Score", this.player2Score);
+        msgObj.put("player1Username", this.player1Username);
+        msgObj.put("player2Username", this.player2Username);
+        msgObj.put("player1Elo", this.player1Elo);
+        msgObj.put("player2Elo", this.player2Elo);
+        msgObj.put("eloIfP1Wins", this.eloIfP1Wins);
+        msgObj.put("eloIfP1Lose", this.eloIfP1Lose);
+        msgObj.put("eloIfDraw", this.eloIfDraw);
+        msgObj.put("numWatching", this.numWatching);
 
-        ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        ObjectWriter objectWriter = new ObjectMapper().writer();
         String json = objectWriter.writeValueAsString(msgObj);
 
         dataOutputStream.writeUTF(json);

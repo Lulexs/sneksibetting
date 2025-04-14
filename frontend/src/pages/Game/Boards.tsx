@@ -11,6 +11,8 @@ export interface BoardsProps {
   elo_gain_if_lose: number;
   elo_gain_if_draw: number;
   num_watching: number;
+  my_score: number;
+  opp_score: number;
 }
 
 export interface BoardProps {
@@ -62,37 +64,49 @@ export default function Boards({
   elo_gain_if_lose,
   elo_gain_if_win,
   num_watching,
+  my_score,
+  opp_score,
 }: BoardsProps) {
   return (
     <Flex direction="column" align="center" gap="lg" style={{ width: "100%" }}>
-      <Text size="sm" c="dimmed">
+      <Text size="md" c="dimmed">
         👁️ {num_watching} {num_watching === 1 ? "person" : "people"} watching
       </Text>
 
       <Flex justify="space-evenly" align="flex-start" style={{ width: "100%" }}>
-        <Stack align="center" gap="xs">
-          <Text fw={700}>{my_username}</Text>
-          <Text size="sm" c="dimmed">
+        <Stack align="center" gap="md">
+          <Text fw={700} size="xl">
+            {my_username}
+          </Text>
+          <Text size="lg" c="dimmed">
             ELO: {my_elo}
           </Text>
-          <Text size="xs" c="gray">
+          <Text size="sm" c="gray">
             +{elo_gain_if_win} if win / {elo_gain_if_draw} if draw /{" "}
             {elo_gain_if_lose} if lose
           </Text>
           <OneBoard board={my_board} />
+          <Text size="lg" fw={600}>
+            Score: {my_score}
+          </Text>
         </Stack>
 
         <Divider orientation="vertical" />
 
-        <Stack align="center" gap="xs">
-          <Text fw={700}>{opp_username}</Text>
-          <Text size="sm" c="dimmed">
+        <Stack align="center" gap="md">
+          <Text fw={700} size="xl">
+            {opp_username}
+          </Text>
+          <Text size="lg" c="dimmed">
             ELO: {opp_elo}
           </Text>
-          <Text size="xs" c="gray">
+          <Text size="sm" c="gray">
             -
           </Text>
           <OneBoard board={opp_board} />
+          <Text size="lg" fw={600}>
+            Score: {opp_score}
+          </Text>
         </Stack>
       </Flex>
     </Flex>

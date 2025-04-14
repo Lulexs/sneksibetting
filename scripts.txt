@@ -20,6 +20,8 @@ CREATE TABLE games (
 	player1_elo  DECIMAL(10, 6),
 	player2_elo  DECIMAL(10, 6),
 	winner_id    UUID,
+	player1_score INT not null,
+	player2_score INT not null,
 	CONSTRAINT game_user_fk1 FOREIGN KEY (player1_id) REFERENCES users(id),
 	CONSTRAINT game_user_fk2 FOREIGN KEY (player2_id) REFERENCES users(id),
 	CONSTRAINT game_user_fk3 FOREIGN KEY (winner_id) REFERENCES users(id)

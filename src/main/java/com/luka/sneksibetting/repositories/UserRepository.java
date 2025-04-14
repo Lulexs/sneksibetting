@@ -5,6 +5,7 @@ import com.luka.sneksibetting.models.user.UserRegisterCreds;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,5 +35,9 @@ public class UserRepository {
                 .set(USERS.ID, UUID.randomUUID())
                 .returning()
                 .fetchOne(r -> r.into(User.class));
+    }
+
+    public User getUserByUserId(UUID userId) {
+        return Objects.requireNonNull(dslContext.selectFrom(USERS).where(USERS.ID.eq(userId)).fetchOne()).map(r -> r.into(User.class));
     }
 }
