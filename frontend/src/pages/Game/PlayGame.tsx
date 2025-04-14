@@ -3,7 +3,7 @@ import { useStore } from "../../stores/store";
 import { useNavigate } from "react-router";
 import { Flex } from "@mantine/core";
 import Board, { BoardsProps } from "./Boards";
-import { TypedMessage, QueuedMessage } from "../../models/Message";
+import { TypedMessage } from "../../models/Message";
 import useWebSocket from "react-use-websocket";
 
 const booleanMatrix: number[][] = Array.from({ length: 10 }, () =>
@@ -55,10 +55,10 @@ async function getMessage(buf: Blob): Promise<TypedMessage> {
 
   switch (type) {
     case 2:
-      return { id: type, message: new QueuedMessage(type) };
+      return { id: type, message: {} };
 
     default:
-      return { id: 0, message: { id: 0 } };
+      return { id: 0, message: {} };
   }
 }
 

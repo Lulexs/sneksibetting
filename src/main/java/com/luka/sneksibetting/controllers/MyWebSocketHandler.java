@@ -1,6 +1,7 @@
 package com.luka.sneksibetting.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.luka.sneksibetting.models.gameMessages.GameStartNoBetMessage;
 import com.luka.sneksibetting.models.gameMessages.HelloMessage;
 import com.luka.sneksibetting.models.gameMessages.QueuedMessage;
 import com.luka.sneksibetting.services.GameService;
@@ -10,14 +11,17 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
+import java.net.http.WebSocket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class MyWebSocketHandler extends BinaryWebSocketHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final ConcurrentHashMap<String, String> seshToUid = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, WebSocketSession> websockets = new ConcurrentHashMap<>();
     private final GameService gameService;
 
     public MyWebSocketHandler(GameService gameService) {
@@ -42,9 +46,17 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
         switch (type) {
             case 1:
                 HelloMessage hello = objectMapper.readValue(jsonString, HelloMessage.class);
-                seshToUid.put(session.getId(), hello.getUserId());
+                websockets.put(hello.getUserId(), session);
                 gameService.AddUserToQueue(hello);
                 session.sendMessage(new BinaryMessage(new QueuedMessage().GetBytes()));
+                Optional<AbstractMap.SimpleEntry<String, String>> pairing = this.gameService.TryPair();
+                if (pairing.isPresent()) {
+                    GameStartNoBetMessage gameStartNoBetMessage = this.gameService.SchedGame(pairing.get().getKey(), pairing.get().getValue());
+                    WebSocketSession sesh1 = websockets.get(pairing.get().getKey());
+                    WebSocketSession sesh2 = websockets.get(pairing.get().getValue());
+                    sesh1.sendMessage(new BinaryMessage(gameStartNoBetMessage.GetBytes()));
+                    sesh2.sendMessage(new BinaryMessage(gameStartNoBetMessage.GetBytes()));
+                }
                 break;
             default:
                 break;
@@ -53,7 +65,12 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        seshToUid.remove(session.getId());
+        try {
+            websockets.remove(session.getId());
+        }
+        catch (Exception ec) {
+            System.out.println("Error: " + ec.getMessage());
+        }
         System.out.println("Disconnected: " + session.getId() + " due to " + status.getReason());
     }
 }

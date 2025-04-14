@@ -1,16 +1,10 @@
-export interface Message {
-    id: number;
-}
+export interface Message {}
 
-export class QueuedMessage implements Message {
-    id: number;
-    
-    constructor(id: number) {
-        this.id = id;
-    }
-}
+export interface QueuedMessage extends Message {}
+
+export interface GameStartNoBets {}
 
 export interface TypedMessage {
-    id: number;
-    message: Message;
+  id: number;
+  message: Message;
 }
