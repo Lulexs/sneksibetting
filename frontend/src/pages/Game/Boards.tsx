@@ -14,6 +14,10 @@ export interface BoardsProps {
   num_watching: number;
   my_score: number;
   opp_score: number;
+  player1HeadPosI: number;
+  player1HeadPosJ: number;
+  player2HeadPosI: number;
+  player2HeadPosJ: number;
 }
 
 export interface BoardProps {

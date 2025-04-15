@@ -1,4 +1,5 @@
 package com.luka.sneksibetting.services;
+import com.luka.sneksibetting.models.gameMessages.AckMessage;
 import com.luka.sneksibetting.models.gameMessages.SnakeMoveMessage;
 import com.luka.sneksibetting.models.gameMessages.UpdateGameStateMessage;
 import com.luka.sneksibetting.models.snake.GameState;
@@ -15,27 +16,29 @@ public class GameUpdateService {
     private final HashMap<String, HashSet<WebSocketSession>> gamesToUsers;
     private final GameService gameService;
     private final HashMap<String, ArrayList<SnakeMoveMessage>> moves;
-    public GameUpdateService(HashMap<String, ArrayList<SnakeMoveMessage>> moves, GameService gameService, HashMap<String, HashSet<WebSocketSession>> gamesToUsers) {
+    private final HashMap<String, Boolean[]> acks;
+    public GameUpdateService(HashMap<String, Boolean[]> acks, HashMap<String, ArrayList<SnakeMoveMessage>> moves, GameService gameService, HashMap<String, HashSet<WebSocketSession>> gamesToUsers) {
         this.gamesToUsers = gamesToUsers;
         this.gameService = gameService;
         this.moves = moves;
-
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(this::sendGameUpdates, 0, 500, TimeUnit.MILLISECONDS);
+        this.acks = acks;
     }
 
-    private void sendGameUpdates() {
-        System.out.println("Sending game updates " + gamesToUsers.size());
-        for (Map.Entry<String, HashSet<WebSocketSession>> entry : gamesToUsers.entrySet()) {
-            String gameId = entry.getKey();
-            Set<WebSocketSession> sessions = entry.getValue();
+    public void Ack(AckMessage msg) {
+        Boolean[] acksB = acks.get(msg.getGameId());
+        if (msg.getPlayer1()) {
+            acksB[0] = true;
+        } else  {
+            acksB[1] = true;
+        }
 
-
-            UpdateGameStateMessage updateMessage = buildGameUpdate(gameId);
-
+        if (acksB[0] && acksB[1]) {
+            acksB[0] = acksB[1] = false;
+            HashSet<WebSocketSession> entry = gamesToUsers.get(msg.getGameId());
+            UpdateGameStateMessage updateMessage = buildGameUpdate(msg.getGameId());
             try {
                 BinaryMessage binaryMessage = new BinaryMessage(updateMessage.GetBytes());
-                for (WebSocketSession session : sessions) {
+                for (WebSocketSession session : entry) {
                     session.sendMessage(binaryMessage);
                 }
             } catch (Exception e) {

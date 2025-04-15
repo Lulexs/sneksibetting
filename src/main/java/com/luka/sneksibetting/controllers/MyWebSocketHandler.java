@@ -1,10 +1,7 @@
 package com.luka.sneksibetting.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.luka.sneksibetting.models.gameMessages.GameStartNoBetMessage;
-import com.luka.sneksibetting.models.gameMessages.HelloMessage;
-import com.luka.sneksibetting.models.gameMessages.QueuedMessage;
-import com.luka.sneksibetting.models.gameMessages.SnakeMoveMessage;
+import com.luka.sneksibetting.models.gameMessages.*;
 import com.luka.sneksibetting.models.snake.GameState;
 import com.luka.sneksibetting.services.GameService;
 import com.luka.sneksibetting.services.GameUpdateService;
@@ -24,12 +21,14 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
     private static final HashMap<String, WebSocketSession> websockets = new HashMap<>();
     private static final HashMap<String, HashSet<WebSocketSession>> gamesToUsers = new HashMap<>();
     private final GameService gameService;
+    private final HashMap<String, Boolean[]> acks = new HashMap<>();
+    private final GameUpdateService gameUpdateService;
 
     private static final HashMap<String, ArrayList<SnakeMoveMessage>> moves = new HashMap<>();
 
     public MyWebSocketHandler(GameService gameService) {
         this.gameService = gameService;
-        GameUpdateService gameUpdateService = new GameUpdateService(moves, gameService, gamesToUsers);
+        gameUpdateService = new GameUpdateService(acks, moves, gameService, gamesToUsers);
     }
 
     @Override
@@ -46,7 +45,7 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
         buffer.get(jsonBytes);
         String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
 
-        System.out.println(type + jsonString);
+//        System.out.println(type + jsonString);
         switch (type) {
             case 1:
                 HelloMessage hello = objectMapper.readValue(jsonString, HelloMessage.class);
@@ -62,6 +61,7 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
                     gamesToUsers.get(gameStartNoBetMessage.getGameId()).add(sesh1);
                     gamesToUsers.get(gameStartNoBetMessage.getGameId()).add(sesh2);
                     moves.put(gameStartNoBetMessage.getGameId(), new ArrayList<>());
+                    acks.put(gameStartNoBetMessage.getGameId(), new Boolean[] {false, false});
                     gameService.AddGameStateToRedis(new GameState(gameStartNoBetMessage));
                     sesh1.sendMessage(new BinaryMessage(gameStartNoBetMessage.GetBytes()));
                     sesh2.sendMessage(new BinaryMessage(gameStartNoBetMessage.GetBytes()));
@@ -71,6 +71,9 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
                 SnakeMoveMessage moveMessage = objectMapper.readValue(jsonString, SnakeMoveMessage.class);
                 moves.get(moveMessage.getGameId()).add(moveMessage);
                 break;
+            case 6:
+                AckMessage ackMessage = objectMapper.readValue(jsonString, AckMessage.class);
+                gameUpdateService.Ack(ackMessage);
             default:
                 break;
         }

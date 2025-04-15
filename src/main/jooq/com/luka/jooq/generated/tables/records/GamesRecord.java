@@ -105,6 +105,34 @@ public class GamesRecord extends UpdatableRecordImpl<GamesRecord> {
         return (UUID) get(5);
     }
 
+    /**
+     * Setter for <code>public.games.player1_score</code>.
+     */
+    public void setPlayer1Score(Integer value) {
+        set(6, value);
+    }
+
+    /**
+     * Getter for <code>public.games.player1_score</code>.
+     */
+    public Integer getPlayer1Score() {
+        return (Integer) get(6);
+    }
+
+    /**
+     * Setter for <code>public.games.player2_score</code>.
+     */
+    public void setPlayer2Score(Integer value) {
+        set(7, value);
+    }
+
+    /**
+     * Getter for <code>public.games.player2_score</code>.
+     */
+    public Integer getPlayer2Score() {
+        return (Integer) get(7);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -128,7 +156,7 @@ public class GamesRecord extends UpdatableRecordImpl<GamesRecord> {
     /**
      * Create a detached, initialised GamesRecord
      */
-    public GamesRecord(UUID id, UUID player1Id, UUID player2Id, BigDecimal player1Elo, BigDecimal player2Elo, UUID winnerId) {
+    public GamesRecord(UUID id, UUID player1Id, UUID player2Id, BigDecimal player1Elo, BigDecimal player2Elo, UUID winnerId, Integer player1Score, Integer player2Score) {
         super(Games.GAMES);
 
         setId(id);
@@ -137,6 +165,8 @@ public class GamesRecord extends UpdatableRecordImpl<GamesRecord> {
         setPlayer1Elo(player1Elo);
         setPlayer2Elo(player2Elo);
         setWinnerId(winnerId);
+        setPlayer1Score(player1Score);
+        setPlayer2Score(player2Score);
         resetChangedOnNotNull();
     }
 }

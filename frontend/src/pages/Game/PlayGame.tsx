@@ -3,7 +3,11 @@ import { useStore } from "../../stores/store";
 import { useNavigate } from "react-router";
 import { Flex } from "@mantine/core";
 import { BoardsProps } from "./Boards";
-import { GameStartNoBets, TypedMessage, UpdateGameStateMessage } from "../../models/Message";
+import {
+  GameStartNoBets,
+  TypedMessage,
+  UpdateGameStateMessage,
+} from "../../models/Message";
 import useWebSocket from "react-use-websocket";
 import Boards from "./Boards";
 
@@ -51,13 +55,12 @@ async function getMessage(buf: Blob): Promise<TypedMessage> {
       const jsonString = new TextDecoder().decode(jsonBytes);
       try {
         const json = JSON.parse(jsonString);
-        return {id: type, message: json}
+        return { id: type, message: json };
       } catch (e) {
         console.error("Failed to parse JSON", e);
-        return {id: type, message: {}}
+        return { id: type, message: {} };
       }
     }
-
 
     default:
       return { id: 0, message: {} };
@@ -90,19 +93,35 @@ export default function PlayGame() {
 
   useEffect(() => {
     const handleKeyDown = (event: any) => {
-      let msg : ArrayBuffer | null = null;
+      let msg: ArrayBuffer | null = null;
       switch (event.key) {
-        case 'ArrowUp':
-          msg = getBytes(5, {gameId: gameState, isPlayer1: isPlayer1, direction: "u"})
+        case "ArrowUp":
+          msg = getBytes(5, {
+            gameId: gameState?.gameId,
+            isPlayer1: isPlayer1,
+            direction: "u",
+          });
           break;
-        case 'ArrowDown':
-          msg = getBytes(5, {gameId: gameState, isPlayer1: isPlayer1, direction: "d"})
+        case "ArrowDown":
+          msg = getBytes(5, {
+            gameId: gameState?.gameId,
+            isPlayer1: isPlayer1,
+            direction: "d",
+          });
           break;
-        case 'ArrowLeft':
-          msg = getBytes(5, {gameId: gameState, isPlayer1: isPlayer1, direction: "l"})
+        case "ArrowLeft":
+          msg = getBytes(5, {
+            gameId: gameState?.gameId,
+            isPlayer1: isPlayer1,
+            direction: "l",
+          });
           break;
-        case 'ArrowRight':
-          msg = getBytes(5, {gameId: gameState, isPlayer1: isPlayer1, direction: "r"})
+        case "ArrowRight":
+          msg = getBytes(5, {
+            gameId: gameState?.gameId,
+            isPlayer1: isPlayer1,
+            direction: "r",
+          });
           break;
         default:
           break;
@@ -112,12 +131,12 @@ export default function PlayGame() {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [gameState]);
 
   useEffect(() => {
     const processMessage = async () => {
@@ -146,10 +165,25 @@ export default function PlayGame() {
             num_watching: msg.numWatching,
             my_score: isPlayer1 ? msg.player1Score : msg.player2Score,
             opp_score: isPlayer1 ? msg.player2Score : msg.player1Score,
+            player1HeadPosI: isPlayer1
+              ? msg.player1HeadPosI
+              : msg.player2HeadPosI,
+            player1HeadPosJ: isPlayer1
+              ? msg.player1HeadPosJ
+              : msg.player2HeadPosJ,
+            player2HeadPosI: isPlayer1
+              ? msg.player2HeadPosI
+              : msg.player1HeadPosI,
+            player2HeadPosJ: isPlayer1
+              ? msg.player2HeadPosJ
+              : msg.player1HeadPosJ,
           };
 
           setGameState(boardProps);
           setState(3);
+          sendMessage(
+            getBytes(6, { gameId: msg.gameId, isPlayer1: isPlayer1 })
+          );
         } else if (parsedMessage.id === 4) {
           const msg = parsedMessage.message as UpdateGameStateMessage;
           const isPlayer1 = userStore.user?.username === msg.player1Username;
@@ -169,9 +203,26 @@ export default function PlayGame() {
             num_watching: msg.numWatching,
             my_score: isPlayer1 ? msg.player1Score : msg.player2Score,
             opp_score: isPlayer1 ? msg.player2Score : msg.player1Score,
+            player1HeadPosI: isPlayer1
+              ? msg.player1HeadPosI
+              : msg.player2HeadPosI,
+            player1HeadPosJ: isPlayer1
+              ? msg.player1HeadPosJ
+              : msg.player2HeadPosJ,
+            player2HeadPosI: isPlayer1
+              ? msg.player2HeadPosI
+              : msg.player1HeadPosI,
+            player2HeadPosJ: isPlayer1
+              ? msg.player2HeadPosJ
+              : msg.player1HeadPosJ,
           };
 
           setGameState(boardProps);
+          setTimeout(() => {
+            sendMessage(
+              getBytes(6, { gameId: boardProps.gameId, isPlayer1: isPlayer1 })
+            );
+          }, 200);
         }
       }
     };
