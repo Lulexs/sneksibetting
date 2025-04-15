@@ -1,7 +1,6 @@
 package com.luka.sneksibetting.services;
 import com.luka.sneksibetting.models.gameMessages.UpdateGameStateMessage;
 import com.luka.sneksibetting.models.snake.GameState;
-import org.jooq.meta.derby.sys.Sys;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.HashMap;

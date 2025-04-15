@@ -88,6 +88,33 @@ export default function PlayGame() {
   }, []);
 
   useEffect(() => {
+    const handleKeyDown = (event: any) => {
+      switch (event.key) {
+        case 'ArrowUp':
+          console.log('Up arrow pressed');
+          break;
+        case 'ArrowDown':
+          console.log('Down arrow pressed');
+          break;
+        case 'ArrowLeft':
+          console.log('Left arrow pressed');
+          break;
+        case 'ArrowRight':
+          console.log('Right arrow pressed');
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
     const processMessage = async () => {
       if (lastMessage && lastMessage.data instanceof Blob) {
         const parsedMessage = await getMessage(lastMessage.data);
