@@ -51,7 +51,7 @@ public class UpdateGameStateMessage extends Message {
             this.player1Board[p1Board.Snake.Body.get(i).getPosI()][p1Board.Snake.Body.get(i).getPosJ()] = 1;
         }
         for (int i = 0; i < p2Board.Snake.Body.size(); i++) {
-            this.player1Board[p2Board.Snake.Body.get(i).getPosI()][p2Board.Snake.Body.get(i).getPosJ()] = 1;
+            this.player2Board[p2Board.Snake.Body.get(i).getPosI()][p2Board.Snake.Body.get(i).getPosJ()] = 1;
         }
         this.player1Board[p1Board.Food.getPosI()][p1Board.Food.getPosJ()] = 2;
         this.player2Board[p2Board.Food.getPosI()][p2Board.Food.getPosJ()] = 2;

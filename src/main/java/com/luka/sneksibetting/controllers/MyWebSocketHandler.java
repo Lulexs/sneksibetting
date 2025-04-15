@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.luka.sneksibetting.models.gameMessages.GameStartNoBetMessage;
 import com.luka.sneksibetting.models.gameMessages.HelloMessage;
 import com.luka.sneksibetting.models.gameMessages.QueuedMessage;
+import com.luka.sneksibetting.models.snake.GameState;
 import com.luka.sneksibetting.services.GameService;
+import com.luka.sneksibetting.services.GameUpdateService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
@@ -14,6 +16,7 @@ import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,12 +24,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class MyWebSocketHandler extends BinaryWebSocketHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final ConcurrentHashMap<String, WebSocketSession> websockets = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<String, HashSet<WebSocketSession>> gamesToUsers = new ConcurrentHashMap<>();
+    private static final HashMap<String, WebSocketSession> websockets = new HashMap<>();
+    private static final HashMap<String, HashSet<WebSocketSession>> gamesToUsers = new HashMap<>();
     private final GameService gameService;
 
     public MyWebSocketHandler(GameService gameService) {
         this.gameService = gameService;
+        GameUpdateService gameUpdateService = new GameUpdateService(gameService, gamesToUsers);
     }
 
     @Override
@@ -58,7 +62,7 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
                     gamesToUsers.put(gameStartNoBetMessage.getGameId(), new HashSet<>());
                     gamesToUsers.get(gameStartNoBetMessage.getGameId()).add(sesh1);
                     gamesToUsers.get(gameStartNoBetMessage.getGameId()).add(sesh2);
-                    gameService.AddGameStateToRedis(gameStartNoBetMessage);
+                    gameService.AddGameStateToRedis(new GameState(gameStartNoBetMessage));
                     sesh1.sendMessage(new BinaryMessage(gameStartNoBetMessage.GetBytes()));
                     sesh2.sendMessage(new BinaryMessage(gameStartNoBetMessage.GetBytes()));
                 }

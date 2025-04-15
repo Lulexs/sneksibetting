@@ -2,6 +2,7 @@ package com.luka.sneksibetting.services;
 
 import com.luka.sneksibetting.models.gameMessages.GameStartNoBetMessage;
 import com.luka.sneksibetting.models.gameMessages.HelloMessage;
+import com.luka.sneksibetting.models.snake.GameState;
 import com.luka.sneksibetting.models.user.User;
 import com.luka.sneksibetting.repositories.UserRepository;
 import org.springframework.data.redis.core.*;
@@ -25,12 +26,21 @@ public class GameService {
         setOperations.add("QUEUE", helloMessage.getUserId());
     }
 
-    public void AddGameStateToRedis(GameStartNoBetMessage gameStartNoBetMessage) {
+    public void AddGameStateToRedis(GameState gameState) {
         try {
-            hashOperations.put("GAMES", gameStartNoBetMessage.getGameId(), gameStartNoBetMessage.toZson());
+            hashOperations.put("GAMES", gameState.getGameId(), gameState.toZson());
         }
         catch (Exception ec) {
             System.out.println(ec.getMessage());
+        }
+    }
+
+    public GameState ReadGameStateFromRedis(String gameId) {
+        try {
+            return new GameState(hashOperations.get("GAMES", gameId));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
         }
     }
 

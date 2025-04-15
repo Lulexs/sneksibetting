@@ -45,6 +45,20 @@ async function getMessage(buf: Blob): Promise<TypedMessage> {
       }
     }
 
+    case 4: {
+      const buffer = await buf.arrayBuffer();
+      const jsonBytes = new Uint8Array(buffer, 4 + 2);
+      const jsonString = new TextDecoder().decode(jsonBytes);
+      try {
+        const json = JSON.parse(jsonString);
+        return {id: type, message: json}
+      } catch (e) {
+        console.error("Failed to parse JSON", e);
+        return {id: type, message: {}}
+      }
+    }
+
+
     default:
       return { id: 0, message: {} };
   }
@@ -77,6 +91,7 @@ export default function PlayGame() {
     const processMessage = async () => {
       if (lastMessage && lastMessage.data instanceof Blob) {
         const parsedMessage = await getMessage(lastMessage.data);
+        console.log(parsedMessage.id);
 
         if (parsedMessage.id === 2) {
           setState(2);
