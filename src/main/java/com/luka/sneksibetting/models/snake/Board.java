@@ -19,6 +19,10 @@ public class Board {
         Snake.Move();
     }
 
+    public void ChangeDir(Character dir) {
+        Snake.ChangeDir(dir);
+    }
+
     public Board(String zson) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> map = mapper.readValue(zson, new TypeReference<Map<String, Object>>() {});

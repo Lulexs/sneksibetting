@@ -1,12 +1,10 @@
 package com.luka.sneksibetting.services;
+import com.luka.sneksibetting.models.gameMessages.SnakeMoveMessage;
 import com.luka.sneksibetting.models.gameMessages.UpdateGameStateMessage;
 import com.luka.sneksibetting.models.snake.GameState;
 import org.springframework.web.socket.WebSocketSession;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import org.springframework.web.socket.BinaryMessage;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,10 +14,11 @@ public class GameUpdateService {
 
     private final HashMap<String, HashSet<WebSocketSession>> gamesToUsers;
     private final GameService gameService;
-
-    public GameUpdateService(GameService gameService, HashMap<String, HashSet<WebSocketSession>> gamesToUsers) {
+    private final HashMap<String, ArrayList<SnakeMoveMessage>> moves;
+    public GameUpdateService(HashMap<String, ArrayList<SnakeMoveMessage>> moves, GameService gameService, HashMap<String, HashSet<WebSocketSession>> gamesToUsers) {
         this.gamesToUsers = gamesToUsers;
         this.gameService = gameService;
+        this.moves = moves;
 
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(this::sendGameUpdates, 0, 500, TimeUnit.MILLISECONDS);
@@ -47,6 +46,18 @@ public class GameUpdateService {
 
     private UpdateGameStateMessage buildGameUpdate(String gameId) {
         GameState gameState = gameService.ReadGameStateFromRedis(gameId);
+
+        ArrayList<SnakeMoveMessage> moves = this.moves.get(gameId);
+        this.moves.put(gameState.getGameId(), new ArrayList<>());
+
+        for (SnakeMoveMessage moveMessage : moves) {
+            if (moveMessage.getPlayer1()) {
+                gameState.getPlayer1Board().ChangeDir(moveMessage.getDirection());
+            }
+            else {
+                gameState.getPlayer2Board().ChangeDir(moveMessage.getDirection());
+            }
+        }
 
         gameState.getPlayer1Board().Update();
         gameState.getPlayer2Board().Update();

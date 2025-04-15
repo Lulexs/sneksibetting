@@ -1,6 +1,7 @@
 import { Divider, Flex, Stack, Text } from "@mantine/core";
 
 export interface BoardsProps {
+  gameId: string;
   my_board: number[][];
   opp_board: number[][];
   my_username: string;

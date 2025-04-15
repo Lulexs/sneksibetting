@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.luka.sneksibetting.models.gameMessages.GameStartNoBetMessage;
 import com.luka.sneksibetting.models.gameMessages.HelloMessage;
 import com.luka.sneksibetting.models.gameMessages.QueuedMessage;
+import com.luka.sneksibetting.models.gameMessages.SnakeMoveMessage;
 import com.luka.sneksibetting.models.snake.GameState;
 import com.luka.sneksibetting.services.GameService;
 import com.luka.sneksibetting.services.GameUpdateService;
@@ -15,11 +16,7 @@ import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 @Component
 public class MyWebSocketHandler extends BinaryWebSocketHandler {
@@ -28,9 +25,11 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
     private static final HashMap<String, HashSet<WebSocketSession>> gamesToUsers = new HashMap<>();
     private final GameService gameService;
 
+    private static final HashMap<String, ArrayList<SnakeMoveMessage>> moves = new HashMap<>();
+
     public MyWebSocketHandler(GameService gameService) {
         this.gameService = gameService;
-        GameUpdateService gameUpdateService = new GameUpdateService(gameService, gamesToUsers);
+        GameUpdateService gameUpdateService = new GameUpdateService(moves, gameService, gamesToUsers);
     }
 
     @Override
@@ -62,10 +61,15 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
                     gamesToUsers.put(gameStartNoBetMessage.getGameId(), new HashSet<>());
                     gamesToUsers.get(gameStartNoBetMessage.getGameId()).add(sesh1);
                     gamesToUsers.get(gameStartNoBetMessage.getGameId()).add(sesh2);
+                    moves.put(gameStartNoBetMessage.getGameId(), new ArrayList<>());
                     gameService.AddGameStateToRedis(new GameState(gameStartNoBetMessage));
                     sesh1.sendMessage(new BinaryMessage(gameStartNoBetMessage.GetBytes()));
                     sesh2.sendMessage(new BinaryMessage(gameStartNoBetMessage.GetBytes()));
                 }
+                break;
+            case 5:
+                SnakeMoveMessage moveMessage = objectMapper.readValue(jsonString, SnakeMoveMessage.class);
+                moves.get(moveMessage.getGameId()).add(moveMessage);
                 break;
             default:
                 break;

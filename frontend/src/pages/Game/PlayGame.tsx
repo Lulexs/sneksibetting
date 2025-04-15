@@ -74,6 +74,7 @@ export default function PlayGame() {
   const [state, setState] = useState(0);
 
   const [gameState, setGameState] = useState<BoardsProps | null>(null);
+  const [isPlayer1, setIsPlayer1] = useState<boolean>(false);
 
   useEffect(() => {
     if (userStore.user == null) {
@@ -89,21 +90,25 @@ export default function PlayGame() {
 
   useEffect(() => {
     const handleKeyDown = (event: any) => {
+      let msg : ArrayBuffer | null = null;
       switch (event.key) {
         case 'ArrowUp':
-          console.log('Up arrow pressed');
+          msg = getBytes(5, {gameId: gameState, isPlayer1: isPlayer1, direction: "u"})
           break;
         case 'ArrowDown':
-          console.log('Down arrow pressed');
+          msg = getBytes(5, {gameId: gameState, isPlayer1: isPlayer1, direction: "d"})
           break;
         case 'ArrowLeft':
-          console.log('Left arrow pressed');
+          msg = getBytes(5, {gameId: gameState, isPlayer1: isPlayer1, direction: "l"})
           break;
         case 'ArrowRight':
-          console.log('Right arrow pressed');
+          msg = getBytes(5, {gameId: gameState, isPlayer1: isPlayer1, direction: "r"})
           break;
         default:
           break;
+      }
+      if (msg != null) {
+        sendMessage(msg);
       }
     };
 
@@ -125,8 +130,10 @@ export default function PlayGame() {
         } else if (parsedMessage.id === 3) {
           const msg = parsedMessage.message as GameStartNoBets;
           const isPlayer1 = userStore.user?.username === msg.player1Username;
+          setIsPlayer1(isPlayer1);
 
           const boardProps: BoardsProps = {
+            gameId: msg.gameId,
             my_board: isPlayer1 ? msg.player1Board : msg.player2Board,
             opp_board: isPlayer1 ? msg.player2Board : msg.player1Board,
             my_username: isPlayer1 ? msg.player1Username : msg.player2Username,
@@ -146,8 +153,10 @@ export default function PlayGame() {
         } else if (parsedMessage.id === 4) {
           const msg = parsedMessage.message as UpdateGameStateMessage;
           const isPlayer1 = userStore.user?.username === msg.player1Username;
+          setIsPlayer1(isPlayer1);
 
           const boardProps: BoardsProps = {
+            gameId: gameState?.gameId!,
             my_board: isPlayer1 ? msg.player1Board : msg.player2Board,
             opp_board: isPlayer1 ? msg.player2Board : msg.player1Board,
             my_username: isPlayer1 ? msg.player1Username : msg.player2Username,
