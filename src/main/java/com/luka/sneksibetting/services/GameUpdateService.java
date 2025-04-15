@@ -24,7 +24,10 @@ public class GameUpdateService {
         this.acks = acks;
     }
 
-    public void Ack(AckMessage msg) {
+    public void Ack(AckMessage msg, Integer msgType) {
+        if (msgType == 5) {
+            gameService.Switcheroo(msg.getGameId());
+        }
         Boolean[] acksB = acks.get(msg.getGameId());
         if (msg.getPlayer1()) {
             acksB[0] = true;
@@ -49,6 +52,7 @@ public class GameUpdateService {
 
     private UpdateGameStateMessage buildGameUpdate(String gameId) {
         GameState gameState = gameService.ReadGameStateFromRedis(gameId);
+        gameService.PrevState(gameState);
 
         ArrayList<SnakeMoveMessage> moves = this.moves.get(gameId);
         this.moves.put(gameState.getGameId(), new ArrayList<>());

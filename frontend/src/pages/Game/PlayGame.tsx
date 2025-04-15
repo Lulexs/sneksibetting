@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "../../stores/store";
 import { useNavigate } from "react-router";
 import { Flex } from "@mantine/core";
@@ -79,6 +79,8 @@ export default function PlayGame() {
   const [gameState, setGameState] = useState<BoardsProps | null>(null);
   const [isPlayer1, setIsPlayer1] = useState<boolean>(false);
 
+  const bytesRef = useRef<ArrayBuffer>(null);
+
   useEffect(() => {
     if (userStore.user == null) {
       navigate("/");
@@ -127,7 +129,7 @@ export default function PlayGame() {
           break;
       }
       if (msg != null) {
-        sendMessage(msg);
+        bytesRef.current = msg;
       }
     };
 
@@ -219,10 +221,15 @@ export default function PlayGame() {
 
           setGameState(boardProps);
           setTimeout(() => {
-            sendMessage(
-              getBytes(6, { gameId: boardProps.gameId, isPlayer1: isPlayer1 })
-            );
-          }, 200);
+            if (bytesRef.current) {
+              sendMessage(bytesRef.current);
+              bytesRef.current = null;
+            } else {
+              sendMessage(
+                getBytes(6, { gameId: boardProps.gameId, isPlayer1: isPlayer1 })
+              );
+            }
+          }, 100);
         }
       }
     };

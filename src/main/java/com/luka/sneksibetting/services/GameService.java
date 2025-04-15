@@ -26,6 +26,14 @@ public class GameService {
         setOperations.add("QUEUE", helloMessage.getUserId());
     }
 
+    public void PrevState(GameState gameState) {
+        try {
+            hashOperations.put("GAMES", gameState.getGameId() + "-1", gameState.toZson());
+        } catch (Exception ec) {
+            System.out.println(ec.getMessage());
+        }
+    }
+
     public void AddGameStateToRedis(GameState gameState) {
         try {
             hashOperations.put("GAMES", gameState.getGameId(), gameState.toZson());
@@ -38,6 +46,20 @@ public class GameService {
     public GameState ReadGameStateFromRedis(String gameId) {
         try {
             return new GameState(hashOperations.get("GAMES", gameId));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public void Switcheroo(String gameId) {
+        GameState prevState = ReadPrevGameStateFromRedis(gameId);
+        AddGameStateToRedis(prevState);
+    }
+
+    public GameState ReadPrevGameStateFromRedis(String gameId) {
+        try {
+            return new GameState(hashOperations.get("GAMES", gameId + "-1"));
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;

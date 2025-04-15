@@ -70,10 +70,11 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
             case 5:
                 SnakeMoveMessage moveMessage = objectMapper.readValue(jsonString, SnakeMoveMessage.class);
                 moves.get(moveMessage.getGameId()).add(moveMessage);
+                gameUpdateService.Ack(new AckMessage(moveMessage.getGameId(), moveMessage.getPlayer1()), 5);
                 break;
             case 6:
                 AckMessage ackMessage = objectMapper.readValue(jsonString, AckMessage.class);
-                gameUpdateService.Ack(ackMessage);
+                gameUpdateService.Ack(ackMessage, 6);
             default:
                 break;
         }
