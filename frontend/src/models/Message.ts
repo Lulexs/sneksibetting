@@ -22,6 +22,21 @@ export interface GameStartNoBets extends Message {
   numWatching: number;
 }
 
+export interface UpdateGameStateMessage extends Message {
+  gameId: string;
+  player1Board: number[][];
+  player2Board: number[][];
+  player1HeadPosI: number;
+  player1HeadPosJ: number;
+  player2HeadPosI: number;
+  player2HeadPosJ: number;
+  player1Score: number;
+  player2Score: number;
+  numWatching: number;
+  player1Username: string;
+  player2Username: string;
+}
+
 export interface TypedMessage {
   id: number;
   message: Message;

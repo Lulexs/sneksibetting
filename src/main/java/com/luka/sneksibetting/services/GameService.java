@@ -4,8 +4,7 @@ import com.luka.sneksibetting.models.gameMessages.GameStartNoBetMessage;
 import com.luka.sneksibetting.models.gameMessages.HelloMessage;
 import com.luka.sneksibetting.models.user.User;
 import com.luka.sneksibetting.repositories.UserRepository;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -14,14 +13,25 @@ import java.util.*;
 public class GameService {
     private final SetOperations<String, String> setOperations;
     private final UserRepository userRepository;
+    private final HashOperations<String, String, String> hashOperations;
 
     public GameService(RedisTemplate<String, String> rt, UserRepository userRepository) {
         setOperations = rt.opsForSet();
         this.userRepository = userRepository;
+        hashOperations = rt.opsForHash();
     }
 
     public void AddUserToQueue(HelloMessage helloMessage) {
         setOperations.add("QUEUE", helloMessage.getUserId());
+    }
+
+    public void AddGameStateToRedis(GameStartNoBetMessage gameStartNoBetMessage) {
+        try {
+            hashOperations.put("GAMES", gameStartNoBetMessage.getGameId(), gameStartNoBetMessage.toZson());
+        }
+        catch (Exception ec) {
+            System.out.println(ec.getMessage());
+        }
     }
 
     public Optional<AbstractMap.SimpleEntry<String, String>> TryPair() {

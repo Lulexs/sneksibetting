@@ -11,10 +11,10 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
-import java.net.http.WebSocket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MyWebSocketHandler extends BinaryWebSocketHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final ConcurrentHashMap<String, WebSocketSession> websockets = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, HashSet<WebSocketSession>> gamesToUsers = new ConcurrentHashMap<>();
     private final GameService gameService;
 
     public MyWebSocketHandler(GameService gameService) {
@@ -54,6 +55,10 @@ public class MyWebSocketHandler extends BinaryWebSocketHandler {
                     GameStartNoBetMessage gameStartNoBetMessage = this.gameService.SchedGame(pairing.get().getKey(), pairing.get().getValue());
                     WebSocketSession sesh1 = websockets.get(pairing.get().getKey());
                     WebSocketSession sesh2 = websockets.get(pairing.get().getValue());
+                    gamesToUsers.put(gameStartNoBetMessage.getGameId(), new HashSet<>());
+                    gamesToUsers.get(gameStartNoBetMessage.getGameId()).add(sesh1);
+                    gamesToUsers.get(gameStartNoBetMessage.getGameId()).add(sesh2);
+                    gameService.AddGameStateToRedis(gameStartNoBetMessage);
                     sesh1.sendMessage(new BinaryMessage(gameStartNoBetMessage.GetBytes()));
                     sesh2.sendMessage(new BinaryMessage(gameStartNoBetMessage.GetBytes()));
                 }

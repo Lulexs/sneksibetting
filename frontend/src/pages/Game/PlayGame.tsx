@@ -3,7 +3,7 @@ import { useStore } from "../../stores/store";
 import { useNavigate } from "react-router";
 import { Flex } from "@mantine/core";
 import { BoardsProps } from "./Boards";
-import { GameStartNoBets, TypedMessage } from "../../models/Message";
+import { GameStartNoBets, TypedMessage, UpdateGameStateMessage } from "../../models/Message";
 import useWebSocket from "react-use-websocket";
 import Boards from "./Boards";
 
@@ -92,7 +92,7 @@ export default function PlayGame() {
             my_elo: isPlayer1 ? msg.player1Elo : msg.player2Elo,
             opp_elo: isPlayer1 ? msg.player2Elo : msg.player1Elo,
             elo_gain_if_win: msg.eloIfP1Wins,
-            elo_gain_if_lose: msg.eloIfP1Lose,
+            elo_gain_if_lose: -msg.eloIfP1Lose,
             elo_gain_if_draw: msg.eloIfDraw,
             num_watching: msg.numWatching,
             my_score: isPlayer1 ? msg.player1Score : msg.player2Score,
@@ -101,6 +101,26 @@ export default function PlayGame() {
 
           setGameState(boardProps);
           setState(3);
+        } else if (parsedMessage.id === 4) {
+          const msg = parsedMessage.message as UpdateGameStateMessage;
+          const isPlayer1 = userStore.user?.username === msg.player1Username;
+
+          const boardProps: BoardsProps = {
+            my_board: isPlayer1 ? msg.player1Board : msg.player2Board,
+            opp_board: isPlayer1 ? msg.player2Board : msg.player1Board,
+            my_username: isPlayer1 ? msg.player1Username : msg.player2Username,
+            opp_username: isPlayer1 ? msg.player2Username : msg.player1Username,
+            my_elo: gameState?.my_elo!,
+            opp_elo: gameState?.opp_elo!,
+            elo_gain_if_win: gameState?.elo_gain_if_win!,
+            elo_gain_if_lose: gameState?.elo_gain_if_lose!,
+            elo_gain_if_draw: gameState?.elo_gain_if_draw!,
+            num_watching: msg.numWatching,
+            my_score: isPlayer1 ? msg.player1Score : msg.player2Score,
+            opp_score: isPlayer1 ? msg.player2Score : msg.player1Score,
+          };
+
+          setGameState(boardProps);
         }
       }
     };
