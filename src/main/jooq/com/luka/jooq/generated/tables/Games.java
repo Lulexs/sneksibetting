@@ -89,16 +89,6 @@ public class Games extends TableImpl<GamesRecord> {
      */
     public final TableField<GamesRecord, UUID> WINNER_ID = createField(DSL.name("winner_id"), SQLDataType.UUID, this, "");
 
-    /**
-     * The column <code>public.games.player1_score</code>.
-     */
-    public final TableField<GamesRecord, Integer> PLAYER1_SCORE = createField(DSL.name("player1_score"), SQLDataType.INTEGER.nullable(false), this, "");
-
-    /**
-     * The column <code>public.games.player2_score</code>.
-     */
-    public final TableField<GamesRecord, Integer> PLAYER2_SCORE = createField(DSL.name("player2_score"), SQLDataType.INTEGER.nullable(false), this, "");
-
     private Games(Name alias, Table<GamesRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }

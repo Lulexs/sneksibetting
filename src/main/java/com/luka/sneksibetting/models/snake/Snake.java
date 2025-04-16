@@ -44,15 +44,23 @@ public class Snake {
     public void ChangeDir(Character dir) {
         if (dir == 'u' && Head.getDirI() == 0) {
             Turns.put(new SimpleEntry<>(Head.getPosI(), Head.getPosJ()), new SimpleEntry<>(-1, 0));
+            Head.setDirI(-1);
+            Head.setDirJ(0);
         }
         else if (dir == 'd' && Head.getDirI() == 0) {
             Turns.put(new SimpleEntry<>(Head.getPosI(), Head.getPosJ()), new SimpleEntry<>(1, 0));
+            Head.setDirI(1);
+            Head.setDirJ(0);
         }
         else if (dir == 'l' && Head.getDirJ() == 0) {
             Turns.put(new SimpleEntry<>(Head.getPosI(), Head.getPosJ()), new SimpleEntry<>(0, -1));
+            Head.setDirI(0);
+            Head.setDirJ(-1);
         }
         else if (dir == 'r' && Head.getDirJ() == 0) {
             Turns.put(new SimpleEntry<>(Head.getPosI(), Head.getPosJ()), new SimpleEntry<>(0, 1));
+            Head.setDirI(0);
+            Head.setDirJ(1);
         }
     }
 
